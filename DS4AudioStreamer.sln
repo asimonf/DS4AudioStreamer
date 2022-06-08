@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DS4AudioStreamer", "DS4AudioStreamer\DS4AudioStreamer.csproj", "{81875D2F-D22C-4BAA-868C-F6A7BBE424BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSampleRate", "SharpSampleRate\SharpSampleRate.csproj", "{75D476A3-4D29-4D39-81B2-A87C8B99FFF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSBC", "SharpSBC\SharpSBC.csproj", "{D4EE413D-557E-4F98-9982-F14372885F3D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81875D2F-D22C-4BAA-868C-F6A7BBE424BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81875D2F-D22C-4BAA-868C-F6A7BBE424BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81875D2F-D22C-4BAA-868C-F6A7BBE424BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81875D2F-D22C-4BAA-868C-F6A7BBE424BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75D476A3-4D29-4D39-81B2-A87C8B99FFF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75D476A3-4D29-4D39-81B2-A87C8B99FFF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75D476A3-4D29-4D39-81B2-A87C8B99FFF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75D476A3-4D29-4D39-81B2-A87C8B99FFF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4EE413D-557E-4F98-9982-F14372885F3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4EE413D-557E-4F98-9982-F14372885F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4EE413D-557E-4F98-9982-F14372885F3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4EE413D-557E-4F98-9982-F14372885F3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
