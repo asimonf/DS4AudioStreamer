@@ -1,6 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Threading;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using SharpSBC;
@@ -10,12 +7,10 @@ namespace DS4AudioStreamer.Sound
 {
     public class SbcAudioStream: IDisposable
     {
-        public delegate void OnSbcFramesAvailable();
-        
         private const int STREAM_SAMPLE_RATE = 32000;
         private const int CHANNEL_COUNT = 2;
         
-        private readonly MyLoopbackCapture _captureDevice;
+        private readonly WasapiCapture _captureDevice;
         
         private readonly CircularBuffer<byte> _audioData;
         private readonly CircularBuffer<byte> _sbcAudioData;
@@ -29,15 +24,11 @@ namespace DS4AudioStreamer.Sound
         private readonly byte[] _sbcPreBuffer;
         private readonly byte[] _sbcPostBuffer;
         
-        public bool Capturing => _captureDevice.CaptureState == CaptureState.Capturing;
-        
         public CircularBuffer<byte> SbcAudioData => _sbcAudioData;
 
         public int FrameSize => (int) _encoder.FrameSize;
 
-        private int _bufferLatencySize;
-
-        public event OnSbcFramesAvailable? SbcFramesAvailable;
+        public int CurrentFrameCount => (_sbcAudioData.CurrentLength / FrameSize);
 
         public SbcAudioStream()
         {
@@ -45,8 +36,8 @@ namespace DS4AudioStreamer.Sound
             _encoder = new SbcEncoder(
                 STREAM_SAMPLE_RATE,
                 8,
-                42,
-                SbcEncoder.ChannelMode.Stereo,
+                48,
+                SbcEncoder.ChannelMode.JointStereo,
                 true,
                 16
             );
@@ -58,17 +49,15 @@ namespace DS4AudioStreamer.Sound
             _captureDevice = new MyLoopbackCapture(0);
             _captureDevice.DataAvailable += CaptureDeviceOnDataAvailable;
 
-            _bufferLatencySize = (int) (_encoder.FrameSize * 8); // Collect at least 8 SBC frames
-            
             // Buffers
-            var bufferSize = _captureDevice.WaveFormat.ConvertLatencyToByteSize(8) * 16;
+            var bufferSize = _captureDevice.WaveFormat.ConvertLatencyToByteSize(32);
             _audioData = new CircularBuffer<byte>(bufferSize);
             _sbcAudioData = new CircularBuffer<byte>(bufferSize);
             _resampledAudioBuffer = new byte[bufferSize];
             _reformattedAudioBuffer = new byte[bufferSize];
             
             // Resampler
-            _resamplerState = src_new(Quality.SRC_SINC_BEST_QUALITY, 2, out var error);
+            _resamplerState = src_new(Quality.SRC_SINC_BEST_QUALITY, CHANNEL_COUNT, out var error);
             _resampleRatio = STREAM_SAMPLE_RATE / (double) _captureDevice.WaveFormat.SampleRate;
             if (IntPtr.Zero == _resamplerState)
             {
@@ -81,27 +70,10 @@ namespace DS4AudioStreamer.Sound
             _captureDevice.StartRecording();
         }
 
-        public void WaitUntil(int size)
-        { 
-            int currentLength;
-
-            lock (_sbcAudioData)
-            {
-                currentLength = _sbcAudioData.CurrentLength;
-            }
-            
-            while (currentLength < size)
-            {
-                lock (_sbcAudioData)
-                    currentLength = _sbcAudioData.CurrentLength;
-            
+        public void WaitUntil(int frameCount)
+        {
+            while (_sbcAudioData.CurrentLength < frameCount * FrameSize)
                 Thread.Yield();
-            }
-        }
-
-        public void WaitUntilFull()
-        { 
-            WaitUntil(_bufferLatencySize * 2);
         }
 
         public void Stop()
@@ -114,6 +86,7 @@ namespace DS4AudioStreamer.Sound
             try
             {   
                 var sampleCount = e.BytesRecorded / 4;
+                
                 var reformatedSampleCount = sampleCount;
                 
                 fixed (byte* srcPtr = e.Buffer) 
@@ -152,23 +125,20 @@ namespace DS4AudioStreamer.Sound
                 while (_audioData.CurrentLength >= (int) _encoder.CodeSize)
                 {
                     _audioData.CopyTo(_sbcPreBuffer, (int) _encoder.CodeSize);
+
+                    long length;
                 
                     fixed (byte* srcPtr = _sbcPreBuffer)
                     fixed (byte* destPtr = _sbcPostBuffer)
                     {
-                        _encoder.Encode(srcPtr, destPtr, _encoder.CodeSize, out var encoded);
-                
-                        if (encoded <= 0)
-                        {
-                            Console.WriteLine("Not encoded");
-                        }
+                        _encoder.Encode(srcPtr, destPtr, _encoder.CodeSize, out length);
                     }
                     
-                    lock (_sbcAudioData)
-                        _sbcAudioData.CopyFrom(_sbcPostBuffer, _sbcPostBuffer.Length);
+                    if (length <= 0)
+                        Console.WriteLine("Not encoded");
+                    else
+                        _sbcAudioData.CopyFrom(_sbcPostBuffer, (int) length);                        
                 }
-
-                SbcFramesAvailable?.Invoke();
             }
             catch (Exception exception)
             {
@@ -178,8 +148,8 @@ namespace DS4AudioStreamer.Sound
 
         public void Dispose()
         {
-            _captureDevice?.Dispose();
-            _encoder?.Dispose();
+            _captureDevice.Dispose();
+            _encoder.Dispose();
         }
     }
 }

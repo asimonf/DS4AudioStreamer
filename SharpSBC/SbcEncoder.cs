@@ -4,7 +4,7 @@ using static SharpSBC.Native;
 
 namespace SharpSBC
 {
-    public unsafe class SbcEncoder: IDisposable
+    public class SbcEncoder: IDisposable
     {
         public enum ChannelMode: byte
         {
@@ -57,7 +57,7 @@ namespace SharpSBC
             FrameSize = sbc_get_frame_length(ref _sbc);
         }
         
-        public long Encode(byte* src, byte* dst, ulong dstSize, out long encoded)
+        public unsafe long Encode(byte* src, byte* dst, ulong dstSize, out long encoded)
         {
             long tmp;
             var len = sbc_encode(ref _sbc, src, CodeSize, dst, dstSize, &tmp);
@@ -66,8 +66,6 @@ namespace SharpSBC
             return len;
         }
         
-        
-
         public void Dispose()
         {
             sbc_finish(ref _sbc);

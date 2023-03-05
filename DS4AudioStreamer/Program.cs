@@ -19,10 +19,10 @@ if (!usedDevice.IsOpen)
     usedDevice.OpenDevice(false);
 }
 
-var captureWorker = new NewCaptureWorker(usedDevice, 1);
+var captureWorker = new NewCaptureWorker(usedDevice);
 captureWorker.Start();
 
 while (usedDevice.IsConnected)
 {
-    Thread.Sleep(100);
+    Thread.Sleep(1000);
 }

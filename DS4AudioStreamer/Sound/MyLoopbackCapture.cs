@@ -11,18 +11,12 @@ namespace DS4AudioStreamer.Sound
         }
 
         public MyLoopbackCapture(MMDevice captureDevice, int buffer)
-            : base(captureDevice, false, buffer)
+            : base(captureDevice, true, buffer)
         {
         }
 
         public static MMDevice GetDefaultLoopbackCaptureDevice() => new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
 
-        public override WaveFormat WaveFormat
-        {
-            get => base.WaveFormat;
-            set => throw new InvalidOperationException("WaveFormat cannot be set for WASAPI Loopback Capture");
-        }
-
-        protected override AudioClientStreamFlags GetAudioClientStreamFlags() => AudioClientStreamFlags.Loopback;
+        protected override AudioClientStreamFlags GetAudioClientStreamFlags() => AudioClientStreamFlags.Loopback | base.GetAudioClientStreamFlags();
     }
 }
