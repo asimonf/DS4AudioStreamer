@@ -3,11 +3,11 @@ using static SharpSBC.Native;
 
 namespace SharpSBC
 {
-    public unsafe class SbcDecoder: IDisposable
+    public class SbcDecoder: IDisposable
     {
         private sbc_t _sbc;
 
-        public ulong Codesize { get; }
+        public ulong CodeSize { get; }
 
         public SbcDecoder()
         {
@@ -16,14 +16,25 @@ namespace SharpSBC
             var sbcInit = sbc_init(ref _sbc, 0);
             if (sbcInit < 0)
                 throw new Exception("");
-            
+
+            CodeSize = sbc_get_codesize(ref _sbc);
         }
         
-        public long Decode(byte* src, byte* dst, ulong dstSize, out long encoded)
+        public long Decode(ReadOnlySpan<byte> src, ReadOnlySpan<byte> dst, ulong dstSize, out ulong encoded)
         {
-            long tmp;
-            var len = sbc_encode(ref _sbc, src, Codesize, dst, dstSize, &tmp);
-            encoded = tmp;
+            ulong tmp;
+            long len;
+
+            unsafe
+            {
+                fixed (byte* psrc = src)
+                fixed (byte* pdst = dst)
+                {
+                    len = sbc_decode(ref _sbc, psrc, CodeSize, pdst, dstSize, &tmp);
+                }
+
+                encoded = tmp;
+            }
 
             return len;
         }

@@ -2,6 +2,7 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using SharpSBC;
 using static SharpSampleRate.SampleRate;
+using ChannelMode = SharpSBC.ChannelMode;
 
 namespace DS4AudioStreamer.Sound
 {
@@ -35,11 +36,11 @@ namespace DS4AudioStreamer.Sound
             // Encoder
             _encoder = new SbcEncoder(
                 STREAM_SAMPLE_RATE,
-                8,
+                SubBandCount.Sb8,
                 48,
-                SbcEncoder.ChannelMode.JointStereo,
-                true,
-                16
+                ChannelMode.JointStereo,
+                AllocationMode.Snr,
+                BlockCount.Blk16
             );
             
             _sbcPreBuffer = new byte[_encoder.CodeSize];
@@ -126,15 +127,9 @@ namespace DS4AudioStreamer.Sound
                 {
                     _audioData.CopyTo(_sbcPreBuffer, (int) _encoder.CodeSize);
 
-                    long length;
-                
-                    fixed (byte* srcPtr = _sbcPreBuffer)
-                    fixed (byte* destPtr = _sbcPostBuffer)
-                    {
-                        _encoder.Encode(srcPtr, destPtr, _encoder.CodeSize, out length);
-                    }
+                    _encoder.Encode(_sbcPreBuffer, _sbcPostBuffer, _encoder.CodeSize, out var length);
                     
-                    if (length <= 0)
+                    if (length == 0)
                         Console.WriteLine("Not encoded");
                     else
                         _sbcAudioData.CopyFrom(_sbcPostBuffer, (int) length);                        

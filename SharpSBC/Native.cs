@@ -111,7 +111,7 @@ namespace SharpSBC
 
         [DllImport(LibraryName, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
         public static extern long sbc_encode(ref sbc_t sbc, void* input, ulong input_len, void* output,
-            ulong output_len, long* written);
+            ulong output_len, ulong* written);
 
         /* Returns the compressed block size in bytes */
         [DllImport(LibraryName, CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
