@@ -47,21 +47,21 @@ namespace DS4AudioStreamer.HidLibrary
         public static IEnumerable<HidDevice> EnumerateDS4(VidPidInfo[] devInfo)
         {
             //int iDebugDevCount = 0;
-            List<HidDevice> foundDevs = new List<HidDevice>();
-            int devInfoLen = devInfo.Length;
+            var foundDevs = new List<HidDevice>();
+            var devInfoLen = devInfo.Length;
             IEnumerable<DeviceInfo> temp = EnumerateDevices();
             for (var devEnum = temp.GetEnumerator(); devEnum.MoveNext();)
             //for (int i = 0, len = temp.Count(); i < len; i++)
             {
-                DeviceInfo x = devEnum.Current;
+                var x = devEnum.Current;
                 //DeviceInfo x = temp.ElementAt(i);               
-                HidDevice tempDev = new HidDevice(x.Path, x.Description, x.Parent);
+                var tempDev = new HidDevice(x.Path, x.Description, x.Parent);
                 //iDebugDevCount++;
                 //AppLogger.LogToGui($"DEBUG: HID#{iDebugDevCount} Path={x.Path}  Description={x.Description}  VID={tempDev.Attributes.VendorHexId}  PID={tempDev.Attributes.ProductHexId}  Usage=0x{tempDev.Capabilities.Usage.ToString("X")}  Version=0x{tempDev.Attributes.Version.ToString("X")}", false);
-                bool found = false;
-                for (int j = 0; !found && j < devInfoLen; j++)
+                var found = false;
+                for (var j = 0; !found && j < devInfoLen; j++)
                 {
-                    VidPidInfo tempInfo = devInfo[j];
+                    var tempInfo = devInfo[j];
                     if ((tempDev.Capabilities.Usage == HID_USAGE_GAMEPAD ||
                         tempDev.Capabilities.Usage == HID_USAGE_JOYSTICK)  &&
                         tempDev.Attributes.VendorId == tempInfo.vid &&
@@ -169,7 +169,7 @@ namespace DS4AudioStreamer.HidLibrary
                                                             descriptionBuffer.Length,
                                                             ref requiredSize);
 
-            return descriptionBuffer.ToUTF8String();
+            return descriptionBuffer.ToUtf8String();
         }
 
         private static string GetBusReportedDeviceDescription(IntPtr deviceInfoSet, ref NativeMethods.SP_DEVINFO_DATA devinfoData)
@@ -190,14 +190,14 @@ namespace DS4AudioStreamer.HidLibrary
                                                                         ref requiredSize,
                                                                         0);
 
-                if (_continue) return descriptionBuffer.ToUTF16String();
+                if (_continue) return descriptionBuffer.ToUtf16String();
             }
             return null;
         }
 
         private static string GetDeviceParent(IntPtr deviceInfoSet, ref NativeMethods.SP_DEVINFO_DATA devinfoData)
         {
-            string result = string.Empty;
+            var result = string.Empty;
 
             var requiredSize = 0;
             ulong propertyType = 0;
@@ -215,7 +215,7 @@ namespace DS4AudioStreamer.HidLibrary
                                                         descriptionBuffer, descriptionBuffer.Length,
                                                         ref requiredSize, 0);
 
-                string tmp = System.Text.Encoding.Unicode.GetString(descriptionBuffer);
+                var tmp = System.Text.Encoding.Unicode.GetString(descriptionBuffer);
                 if (tmp.EndsWith("\0"))
                 {
                     tmp = tmp.Remove(tmp.Length - 1);

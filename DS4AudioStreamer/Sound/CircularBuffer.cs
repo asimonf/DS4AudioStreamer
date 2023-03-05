@@ -53,7 +53,7 @@ namespace DS4AudioStreamer.Sound
 
         public void CopyFrom(T[] arr, int length)
         {
-            int startOffset = 0;
+            var startOffset = 0;
             if (CurrentLength + length >= Capacity)
             {
                 startOffset = CurrentLength + length - Capacity;

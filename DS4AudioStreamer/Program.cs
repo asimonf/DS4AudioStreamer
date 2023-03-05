@@ -1,25 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using DS4AudioStreamer;
+﻿using DS4AudioStreamer;
 using DS4AudioStreamer.Sound;
-using FFT.CRC;
-
-Console.Write("Raising priority... ");
-
-try
-{
-    Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
-    Console.WriteLine("Done!");
-}
-catch
-{
-    Console.WriteLine("Failed! (ignoring)");
-} 
 
 var hidDevices = DeviceEnumerator.FindDevices();
 
@@ -31,15 +11,18 @@ if (null == usedDevice)
     return;
 }
 
-usedDevice.OpenDevice(false);
+usedDevice.OpenDevice(true);
 
-var audioStream = new SbcAudioStream();
-var captureWorker = new NewCaptureWorker(audioStream, usedDevice, 1);
-
-audioStream.Start();
-
-while (usedDevice.IsConnected && audioStream.Capturing)
+if (!usedDevice.IsOpen)
 {
-    
+    Console.WriteLine("Could not open device exclusively :(");
+    usedDevice.OpenDevice(false);
+}
+
+var captureWorker = new NewCaptureWorker(usedDevice, 1);
+captureWorker.Start();
+
+while (usedDevice.IsConnected)
+{
     Thread.Sleep(100);
 }

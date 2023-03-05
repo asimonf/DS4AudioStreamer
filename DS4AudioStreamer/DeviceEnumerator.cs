@@ -17,7 +17,7 @@ namespace DS4AudioStreamer
 
         public static List<HidDevice> FindDevices()
         {
-            IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
+            var hDevices = HidDevices.EnumerateDS4(knownDevices);
             List<HidDevice> tempList = hDevices.ToList();
             return tempList;
         }
